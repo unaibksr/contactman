@@ -11,10 +11,6 @@ interface ContactListProps {
   searchQuery: string;
   onOpenAddModal: () => void;
   onOpenImportExport: () => void;
-  selectionMode?: boolean;
-  selectedIds?: Set<string>;
-  onToggleSelect?: (id: string) => void;
-  onLongPress?: (id: string) => void;
 }
 
 export const ContactList: React.FC<ContactListProps> = ({
@@ -25,10 +21,6 @@ export const ContactList: React.FC<ContactListProps> = ({
   searchQuery,
   onOpenAddModal,
   onOpenImportExport,
-  selectionMode,
-  selectedIds,
-  onToggleSelect,
-  onLongPress,
 }) => {
   const groupedContacts = useMemo(() => {
     const groups: { [letter: string]: Contact[] } = {};
@@ -117,10 +109,6 @@ export const ContactList: React.FC<ContactListProps> = ({
                 onSelect={onSelectContact}
                 onToggleFavorite={onToggleFavorite}
                 onDelete={onDeleteContact}
-                selectionMode={selectionMode}
-                isSelected={selectedIds?.has(contact.id)}
-                onToggleSelect={onToggleSelect}
-                onLongPress={onLongPress}
               />
             ))}
           </div>

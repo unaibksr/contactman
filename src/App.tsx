@@ -11,7 +11,7 @@ import { ContactList } from './components/ContactList';
 import { ContactDetailModal } from './components/ContactDetailModal';
 import { ContactFormModal } from './components/ContactFormModal';
 import { VcfImportExportModal } from './components/VcfImportExportModal';
-import { Plus, Trash2, CheckCircle2, ShieldCheck, Download, Upload } from 'lucide-react';
+import { Plus, CheckCircle2, ShieldCheck, Download, Upload } from 'lucide-react';
 import { PWAInstallButton } from './components/PWAInstallButton';
 
 export default function App() {
@@ -25,9 +25,6 @@ export default function App() {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
-
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     saveContacts(contacts);
@@ -141,40 +138,6 @@ export default function App() {
     setIsImportExportOpen(true);
   };
 
-  const handleLongPress = (id: string) => {
-    setSelectionMode(true);
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const handleToggleSelect = (id: string) => {
-    if (!selectionMode) return;
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const handleCancelSelection = () => {
-    setSelectionMode(false);
-    setSelectedIds(new Set());
-  };
-
-  const handleDeleteSelected = () => {
-    setContacts((prev) => prev.filter((c) => !selectedIds.has(c.id)));
-    if (selectedContact && selectedIds.has(selectedContact.id)) {
-      setSelectedContact(null);
-    }
-    setSelectionMode(false);
-    setSelectedIds(new Set());
-  };
-
   return (
     <div className="min-h-screen w-full bg-[#121212] text-[#E0E0E0] flex items-center justify-center p-0 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
       <div className="flex items-center justify-center w-full max-w-5xl">
@@ -189,10 +152,6 @@ export default function App() {
             duplicateCount={duplicateContactIds.size}
             onOpenAddModal={() => setIsAddingContact(true)}
             onOpenImportExport={handleOpenImportExport}
-            selectionMode={selectionMode}
-            selectedCount={selectedIds.size}
-            onCancelSelection={handleCancelSelection}
-            onDeleteSelected={handleDeleteSelected}
           />
 
           <ContactList
@@ -203,10 +162,6 @@ export default function App() {
             searchQuery={searchQuery}
             onOpenAddModal={() => setIsAddingContact(true)}
             onOpenImportExport={handleOpenImportExport}
-            selectionMode={selectionMode}
-            selectedIds={selectedIds}
-            onToggleSelect={handleToggleSelect}
-            onLongPress={handleLongPress}
           />
 
           <button
@@ -214,15 +169,9 @@ export default function App() {
             type="button"
             onClick={() => setIsAddingContact(true)}
             aria-label="Add new contact"
-            className={`absolute bottom-24 right-6 w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center hover:bg-white active:scale-95 transition-transform z-20 ${
-              selectionMode ? 'bg-[#252525] text-[#E0E0E0]' : 'bg-[#E0E0E0] text-[#121212]'
-            }`}
+            className="absolute bottom-24 right-6 w-14 h-14 bg-[#E0E0E0] text-[#121212] rounded-2xl shadow-xl flex items-center justify-center hover:bg-white active:scale-95 transition-transform z-20"
           >
-            {selectionMode ? (
-              <span className="text-xs font-semibold">Cancel</span>
-            ) : (
-              <Plus className="w-6 h-6 stroke-[2.5]" />
-            )}
+            <Plus className="w-6 h-6 stroke-[2.5]" />
           </button>
 
           {selectedContact && (
