@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Full bleed background for maskable icon -->
+  <rect width="512" height="512" fill="#0f172a"/>
+  <!-- Safe zone contained graphic (80% circle safe zone) -->
+  <g transform="translate(40, 40) scale(0.84)">
+    <rect x="120" y="88" width="272" height="336" rx="24" fill="#1e293b" stroke="#334155" stroke-width="8"/>
+    <!-- Spine binding rings -->
+    <circle cx="108" cy="152" r="10" fill="#94a3b8"/>
+    <rect x="98" y="148" width="28" height="8" rx="4" fill="#94a3b8"/>
+    <circle cx="108" cy="224" r="10" fill="#94a3b8"/>
+    <rect x="98" y="220" width="28" height="8" rx="4" fill="#94a3b8"/>
+    <circle cx="108" cy="296" r="10" fill="#94a3b8"/>
+    <rect x="98" y="292" width="28" height="8" rx="4" fill="#94a3b8"/>
+    <circle cx="108" cy="368" r="10" fill="#94a3b8"/>
+    <rect x="98" y="364" width="28" height="8" rx="4" fill="#94a3b8"/>
+    <!-- Minimal user avatar icon centered in book -->
+    <circle cx="260" cy="216" r="48" fill="#f8fafc"/>
+    <path d="M192 328 C 192 284, 222 268, 260 268 C 298 268, 328 284, 328 328" fill="none" stroke="#f8fafc" stroke-width="18" stroke-linecap="round"/>
+    <!-- Minimalist bookmark / index tab -->
+    <path d="M336 88 L360 88 L360 144 L348 132 L336 144 Z" fill="#64748b"/>
+  </g>
+</svg>

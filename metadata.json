@@ -1,0 +1,6 @@
+{
+  "name": "Contact Book",
+  "description": "Minimalistic mobile-first contact book with .vcf file import and export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
