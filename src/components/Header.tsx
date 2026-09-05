@@ -1,14 +1,15 @@
 import React from 'react';
-import { Search, X, Star, Upload, Download, Trash2 } from 'lucide-react';
+import { Search, X, Star, Upload, Download, CopyCheck, Trash2 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
-  activeFilter: 'all' | 'favorites';
-  onFilterChange: (filter: 'all' | 'favorites') => void;
+  activeFilter: 'all' | 'favorites' | 'duplicates';
+  onFilterChange: (filter: 'all' | 'favorites' | 'duplicates') => void;
   totalContacts: number;
   filteredCount: number;
+  duplicateCount?: number;
   onOpenAddModal: () => void;
   onOpenImportExport: () => void;
   selectionMode?: boolean;
@@ -24,6 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   onFilterChange,
   totalContacts,
   filteredCount,
+  duplicateCount = 0,
   onOpenAddModal,
   onOpenImportExport,
   selectionMode,
@@ -116,36 +118,55 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {!selectionMode && (
-        <div className="flex items-center gap-1.5 px-6 pb-3 pt-1 overflow-x-auto scrollbar-none text-xs">
-          <button
-            type="button"
-            onClick={() => onFilterChange('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition ${
-              activeFilter === 'all'
-                ? 'bg-[#E0E0E0] text-[#121212] font-semibold shadow-xs'
-                : 'bg-[#252525] text-[#888888] hover:text-[#E0E0E0] hover:bg-[#333333]'
-            }`}
-          >
-            All ({totalContacts})
-          </button>
+      <div className="flex items-center gap-1.5 px-6 pb-3 pt-1 overflow-x-auto scrollbar-none text-xs">
+        <button
+          type="button"
+          onClick={() => onFilterChange('all')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition ${
+            activeFilter === 'all'
+              ? 'bg-[#E0E0E0] text-[#121212] font-semibold shadow-xs'
+              : 'bg-[#252525] text-[#888888] hover:text-[#E0E0E0] hover:bg-[#333333]'
+          }`}
+        >
+          All ({totalContacts})
+        </button>
 
+        <button
+          type="button"
+          onClick={() => onFilterChange('favorites')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition ${
+            activeFilter === 'favorites'
+              ? 'bg-[#E0E0E0] text-[#121212] font-semibold shadow-xs'
+              : 'bg-[#252525] text-[#888888] hover:text-[#E0E0E0] hover:bg-[#333333]'
+          }`}
+        >
+          <Star
+            className={`w-3 h-3 ${
+              activeFilter === 'favorites' ? 'fill-[#121212] text-[#121212]' : 'fill-[#888888] text-[#888888]'
+            }`}
+          />
+          <span>Favorites</span>
+        </button>
+
+        {duplicateCount > 0 && (
           <button
             type="button"
-            onClick={() => onFilterChange('favorites')}
+            onClick={() => onFilterChange('duplicates')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition ${
-              activeFilter === 'favorites'
+              activeFilter === 'duplicates'
                 ? 'bg-[#E0E0E0] text-[#121212] font-semibold shadow-xs'
                 : 'bg-[#252525] text-[#888888] hover:text-[#E0E0E0] hover:bg-[#333333]'
             }`}
           >
-            <Star
+            <CopyCheck
               className={`w-3 h-3 ${
-                activeFilter === 'favorites' ? 'fill-[#121212] text-[#121212]' : 'fill-[#888888] text-[#888888]'
+                activeFilter === 'duplicates' ? 'text-[#121212]' : 'text-[#888888]'
               }`}
             />
-            <span>Favorites</span>
+            <span>Duplicates ({duplicateCount})</span>
           </button>
-        </div>
+        )}
+      </div>
       )}
     </header>
   );

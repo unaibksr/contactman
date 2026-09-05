@@ -20,7 +20,7 @@ export default function App() {
   });
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'favorites'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'favorites' | 'duplicates'>('all');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [isAddingContact, setIsAddingContact] = useState(false);
@@ -33,9 +33,31 @@ export default function App() {
     saveContacts(contacts);
   }, [contacts]);
 
+  const duplicateContactIds = useMemo(() => {
+    const phoneMap = new Map<string, string[]>();
+    contacts.forEach((c) => {
+      c.phones.forEach((p) => {
+        const normalized = p.number.replace(/[^0-9+]/g, '');
+        if (!normalized) return;
+        const existing = phoneMap.get(normalized) || [];
+        existing.push(c.id);
+        phoneMap.set(normalized, existing);
+      });
+    });
+
+    const ids = new Set<string>();
+    phoneMap.forEach((idsList) => {
+      if (idsList.length > 1) {
+        idsList.forEach((id) => ids.add(id));
+      }
+    });
+    return ids;
+  }, [contacts]);
+
   const filteredContacts = useMemo(() => {
     return contacts.filter((c) => {
       if (activeFilter === 'favorites' && !c.isFavorite) return false;
+      if (activeFilter === 'duplicates' && !duplicateContactIds.has(c.id)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const fullName = `${c.firstName || ''} ${c.lastName || ''}`.toLowerCase();
@@ -55,7 +77,7 @@ export default function App() {
       }
       return true;
     });
-  }, [contacts, activeFilter, searchQuery]);
+  }, [contacts, activeFilter, searchQuery, duplicateContactIds]);
 
   const handleToggleFavorite = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -164,6 +186,7 @@ export default function App() {
             onFilterChange={setActiveFilter}
             totalContacts={contacts.length}
             filteredCount={filteredContacts.length}
+            duplicateCount={duplicateContactIds.size}
             onOpenAddModal={() => setIsAddingContact(true)}
             onOpenImportExport={handleOpenImportExport}
             selectionMode={selectionMode}
