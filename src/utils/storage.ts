@@ -89,14 +89,11 @@ export const INITIAL_CONTACTS: Contact[] = [
 export function getStoredContacts(): Contact[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_CONTACTS));
-      return INITIAL_CONTACTS;
-    }
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : INITIAL_CONTACTS;
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return INITIAL_CONTACTS;
+    return [];
   }
 }
 
