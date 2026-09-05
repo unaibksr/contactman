@@ -25,10 +25,9 @@ export const ContactCard: React.FC<ContactCardProps> = ({
 }) => {
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const didLongPressRef = useRef(false);
-  const [swipeOffset, setSwipeOffset] = useState(0);
   const [showDelete, setShowDelete] = useState(false);
   const touchStartX = useRef(0);
-  const touchCurrentX = useRef(0);
+  const touchStartY = useRef(0);
   const isSwiping = useRef(false);
 
   const displayName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || contact.company || 'Unnamed';
@@ -56,41 +55,39 @@ export const ContactCard: React.FC<ContactCardProps> = ({
     return () => clearPressTimer();
   }, [clearPressTimer]);
 
-  const handlePressStart = (clientX: number) => {
+  const dismissDelete = useCallback(() => {
+    setShowDelete(false);
+  }, []);
+
+  useEffect(() => {
+    if (selectionMode) dismissDelete();
+  }, [selectionMode, dismissDelete]);
+
+  const handlePressStart = (clientX: number, clientY: number) => {
     if (selectionMode) return;
     didLongPressRef.current = false;
     isSwiping.current = false;
     touchStartX.current = clientX;
-    touchCurrentX.current = clientX;
+    touchStartY.current = clientY;
     pressTimerRef.current = setTimeout(() => {
       didLongPressRef.current = true;
       onLongPress?.(contact.id);
+      setShowDelete(true);
     }, 1000);
   };
 
-  const handlePressMove = (clientX: number) => {
+  const handlePressMove = (clientX: number, clientY: number) => {
     if (selectionMode) return;
-    const diff = clientX - touchStartX.current;
-    if (Math.abs(diff) > 10) {
+    const diffX = clientX - touchStartX.current;
+    const diffY = clientY - touchStartY.current;
+    if (Math.abs(diffX) > 10 || Math.abs(diffY) > 10) {
       isSwiping.current = true;
       clearPressTimer();
-    }
-    if (isSwiping.current && diff > 0) {
-      touchCurrentX.current = clientX;
-      const offset = Math.min(diff, 120);
-      setSwipeOffset(offset);
-      setShowDelete(offset > 60);
     }
   };
 
   const handlePressEnd = () => {
     clearPressTimer();
-    if (!isSwiping.current) return;
-    if (swipeOffset < 60) {
-      setSwipeOffset(0);
-      setShowDelete(false);
-    }
-    isSwiping.current = false;
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -100,59 +97,52 @@ export const ContactCard: React.FC<ContactCardProps> = ({
       onToggleSelect?.(contact.id);
       return;
     }
-    if (swipeOffset < 60) {
-      onSelect(contact);
-    }
+    onSelect(contact);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSwipeOffset(0);
     setShowDelete(false);
     onDelete?.(contact.id);
   };
 
-  const resetSwipe = useCallback(() => {
-    setSwipeOffset(0);
-    setShowDelete(false);
-  }, []);
-
-  useEffect(() => {
-    if (selectionMode) resetSwipe();
-  }, [selectionMode, resetSwipe]);
-
   return (
-    <div className="relative overflow-hidden border-b border-[#252525]/60 last:border-b-0">
-      <div
-        className={`absolute inset-y-0 right-0 flex items-center justify-center bg-rose-600 transition-all duration-200 ${
-          showDelete ? 'w-24 opacity-100' : 'w-0 opacity-0'
-        }`}
-      >
-        <button
-          type="button"
-          onClick={handleDeleteClick}
-          className="flex items-center justify-center w-16 h-16 text-white"
-          aria-label="Delete contact"
-        >
-          <Trash2 className="w-5 h-5" />
-        </button>
-      </div>
+    <div className="relative border-b border-[#252525]/60 last:border-b-0">
+      {showDelete && (
+        <div className="absolute inset-0 z-10 flex items-center justify-between px-6 bg-rose-600/95">
+          <span className="text-xs font-medium text-white/80">Delete contact?</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); dismissDelete(); }}
+              className="px-3 py-1.5 rounded-lg bg-white/10 text-xs font-medium text-white hover:bg-white/20 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className="px-3 py-1.5 rounded-lg bg-white text-xs font-semibold text-rose-600 hover:bg-white/90 transition"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         id={`contact-card-${contact.id}`}
         onClick={handleCardClick}
-        onMouseDown={(e) => handlePressStart(e.clientX)}
-        onMouseMove={(e) => handlePressMove(e.clientX)}
+        onMouseDown={(e) => handlePressStart(e.clientX, e.clientY)}
+        onMouseMove={(e) => handlePressMove(e.clientX, e.clientY)}
         onMouseUp={handlePressEnd}
         onMouseLeave={() => {
           handlePressEnd();
-          if (isSwiping.current && swipeOffset < 60) resetSwipe();
         }}
-        onTouchStart={(e) => handlePressStart(e.touches[0].clientX)}
-        onTouchMove={(e) => handlePressMove(e.touches[0].clientX)}
+        onTouchStart={(e) => handlePressStart(e.touches[0].clientX, e.touches[0].clientY)}
+        onTouchMove={(e) => handlePressMove(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchEnd={handlePressEnd}
-        style={{ transform: `translateX(-${swipeOffset}px)` }}
-        className={`group relative flex items-center justify-between px-6 py-3.5 active:bg-[#252525] transition-colors border-b border-[#252525]/60 last:border-b-0 ${
+        className={`group relative flex items-center justify-between px-6 py-3.5 active:bg-[#252525] transition-colors ${
           selectionMode ? 'cursor-default' : 'cursor-pointer hover:bg-[#252525]/60'
         } ${isSelected ? 'bg-[#252525]/60' : ''}`}
       >
