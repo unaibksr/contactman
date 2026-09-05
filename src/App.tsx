@@ -199,6 +199,7 @@ export default function App() {
             contacts={filteredContacts}
             onSelectContact={(c) => setSelectedContact(c)}
             onToggleFavorite={handleToggleFavorite}
+            onDeleteContact={handleDeleteContact}
             searchQuery={searchQuery}
             onOpenAddModal={() => setIsAddingContact(true)}
             onOpenImportExport={handleOpenImportExport}

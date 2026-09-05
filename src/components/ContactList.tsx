@@ -7,6 +7,7 @@ interface ContactListProps {
   contacts: Contact[];
   onSelectContact: (contact: Contact) => void;
   onToggleFavorite: (id: string, e: React.MouseEvent) => void;
+  onDeleteContact: (id: string) => void;
   searchQuery: string;
   onOpenAddModal: () => void;
   onOpenImportExport: () => void;
@@ -20,6 +21,7 @@ export const ContactList: React.FC<ContactListProps> = ({
   contacts,
   onSelectContact,
   onToggleFavorite,
+  onDeleteContact,
   searchQuery,
   onOpenAddModal,
   onOpenImportExport,
@@ -114,6 +116,7 @@ export const ContactList: React.FC<ContactListProps> = ({
                 contact={contact}
                 onSelect={onSelectContact}
                 onToggleFavorite={onToggleFavorite}
+                onDelete={onDeleteContact}
                 selectionMode={selectionMode}
                 isSelected={selectedIds?.has(contact.id)}
                 onToggleSelect={onToggleSelect}
