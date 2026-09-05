@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Contact } from '../types';
-import { Star, Phone, Mail, CheckSquare, AlertTriangle, Trash2 } from 'lucide-react';
+import { Star, Mail, CheckSquare, AlertTriangle, Trash2 } from 'lucide-react';
 
 interface ContactCardProps {
   contact: Contact;
@@ -191,12 +191,6 @@ export const ContactCard: React.FC<ContactCardProps> = ({
 
         {!selectionMode && !showDelete && (
           <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-            {primaryPhone && (
-              <a href={`tel:${primaryPhone.number}`} aria-label={`Call ${displayName}`} className="p-2 text-[#666666] hover:text-[#E0E0E0] rounded-full hover:bg-[#252525] transition" title={`Call ${primaryPhone.number}`}>
-                <Phone className="w-4 h-4" />
-              </a>
-            )}
-
             {primaryEmail && !primaryPhone && (
               <a href={`mailto:${primaryEmail.address}`} aria-label={`Email ${displayName}`} className="p-2 text-[#666666] hover:text-[#E0E0E0] rounded-full hover:bg-[#252525] transition" title={`Email ${primaryEmail.address}`}>
                 <Mail className="w-4 h-4" />

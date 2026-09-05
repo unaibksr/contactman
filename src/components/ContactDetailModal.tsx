@@ -5,7 +5,6 @@ import {
   Star,
   Edit2,
   Trash2,
-  Phone,
   MessageSquare,
   Mail,
   Copy,
@@ -99,19 +98,7 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact,
           )}
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
-          {primaryPhone ? (
-            <a href={`tel:${primaryPhone.number}`} className="flex flex-col items-center justify-center py-3.5 rounded-2xl bg-[#252525] hover:bg-[#333333] text-[#E0E0E0] active:scale-98 transition">
-              <Phone className="w-4 h-4 mb-1.5 text-[#E0E0E0]" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-[#888888]">Call</span>
-            </a>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-3.5 rounded-2xl bg-[#202020] text-[#555555] opacity-50 cursor-not-allowed">
-              <Phone className="w-4 h-4 mb-1.5 opacity-40" />
-              <span className="text-[10px] uppercase tracking-wider">Call</span>
-            </div>
-          )}
-
+        <div className="grid grid-cols-3 gap-2">
           {primaryPhone ? (
             <a href={`sms:${primaryPhone.number}`} className="flex flex-col items-center justify-center py-3.5 rounded-2xl bg-[#252525] hover:bg-[#333333] text-[#E0E0E0] active:scale-98 transition">
               <MessageSquare className="w-4 h-4 mb-1.5 text-[#E0E0E0]" />
