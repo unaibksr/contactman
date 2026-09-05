@@ -73,10 +73,28 @@ export default function App() {
   const handleSaveContact = (savedContact: Contact) => {
     setContacts((prev) => {
       const exists = prev.some((c) => c.id === savedContact.id);
-      const updatedList = exists
-        ? prev.map((c) => (c.id === savedContact.id ? savedContact : c))
-        : [savedContact, ...prev];
-      return sortContactsAlphabetical(updatedList);
+      if (exists) {
+        return sortContactsAlphabetical(prev.map((c) => (c.id === savedContact.id ? savedContact : c)));
+      }
+
+      const duplicate = prev.find((c) => {
+        const savedName = `${savedContact.firstName} ${savedContact.lastName}`.trim().toLowerCase();
+        const existingName = `${c.firstName} ${c.lastName}`.trim().toLowerCase();
+        if (savedName && existingName && savedName === existingName) return true;
+
+        const savedPhones = savedContact.phones.map((p) => p.number.replace(/[^0-9+]/g, '')).filter(Boolean);
+        const existingPhones = c.phones.map((p) => p.number.replace(/[^0-9+]/g, '')).filter(Boolean);
+        if (savedPhones.some((p) => existingPhones.includes(p))) return true;
+
+        return false;
+      });
+
+      if (duplicate) {
+        const merged = { ...duplicate, ...savedContact, id: duplicate.id, createdAt: duplicate.createdAt, updatedAt: Date.now() };
+        return sortContactsAlphabetical(prev.map((c) => (c.id === duplicate.id ? merged : c)));
+      }
+
+      return sortContactsAlphabetical([savedContact, ...prev]);
     });
 
     if (selectedContact && selectedContact.id === savedContact.id) {
