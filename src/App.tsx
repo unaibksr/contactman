@@ -11,7 +11,7 @@ import { ContactList } from './components/ContactList';
 import { ContactDetailModal } from './components/ContactDetailModal';
 import { ContactFormModal } from './components/ContactFormModal';
 import { VcfImportExportModal } from './components/VcfImportExportModal';
-import { Plus, Users, FileCode, CheckCircle2, ShieldCheck, Download, Upload } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, ShieldCheck, Download, Upload } from 'lucide-react';
 import { PWAInstallButton } from './components/PWAInstallButton';
 
 export default function App() {
@@ -26,15 +26,16 @@ export default function App() {
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
 
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     saveContacts(contacts);
   }, [contacts]);
 
   const filteredContacts = useMemo(() => {
     return contacts.filter((c) => {
-      if (activeFilter === 'favorites' && !c.isFavorite) {
-        return false;
-      }
+      if (activeFilter === 'favorites' && !c.isFavorite) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const fullName = `${c.firstName || ''} ${c.lastName || ''}`.toLowerCase();
@@ -43,7 +44,6 @@ export default function App() {
         const notes = (c.notes || '').toLowerCase();
         const phoneMatch = c.phones.some((p) => p.number.toLowerCase().includes(q));
         const emailMatch = c.emails.some((e) => e.address.toLowerCase().includes(q));
-
         return (
           fullName.includes(q) ||
           company.includes(q) ||
@@ -101,10 +101,43 @@ export default function App() {
     setIsImportExportOpen(true);
   };
 
+  const handleLongPress = (id: string) => {
+    setSelectionMode(true);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleToggleSelect = (id: string) => {
+    if (!selectionMode) return;
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleCancelSelection = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleDeleteSelected = () => {
+    setContacts((prev) => prev.filter((c) => !selectedIds.has(c.id)));
+    if (selectedContact && selectedIds.has(selectedContact.id)) {
+      setSelectedContact(null);
+    }
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#121212] text-[#E0E0E0] flex items-center justify-center p-0 sm:p-6 lg:p-8 font-sans overflow-x-hidden">
       <div className="flex items-center justify-center w-full max-w-5xl">
-        {/* Mobile-First Device Frame matching Elegant Dark */}
         <main className="w-full max-w-[390px] h-screen sm:h-[720px] bg-[#1A1A1A] sm:rounded-[48px] sm:border-[10px] sm:border-[#252525] shadow-2xl flex flex-col overflow-hidden relative">
           <Header
             searchQuery={searchQuery}
@@ -115,6 +148,10 @@ export default function App() {
             filteredCount={filteredContacts.length}
             onOpenAddModal={() => setIsAddingContact(true)}
             onOpenImportExport={handleOpenImportExport}
+            selectionMode={selectionMode}
+            selectedCount={selectedIds.size}
+            onCancelSelection={handleCancelSelection}
+            onDeleteSelected={handleDeleteSelected}
           />
 
           <ContactList
@@ -124,20 +161,28 @@ export default function App() {
             searchQuery={searchQuery}
             onOpenAddModal={() => setIsAddingContact(true)}
             onOpenImportExport={handleOpenImportExport}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onLongPress={handleLongPress}
           />
 
-          {/* Floating Action Button (FAB) matching Elegant Dark specification */}
           <button
             id="fab-add-contact"
             type="button"
             onClick={() => setIsAddingContact(true)}
             aria-label="Add new contact"
-            className="absolute bottom-24 right-6 w-14 h-14 bg-[#E0E0E0] text-[#121212] rounded-2xl shadow-xl flex items-center justify-center hover:bg-white active:scale-95 transition-transform z-20"
+            className={`absolute bottom-24 right-6 w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center hover:bg-white active:scale-95 transition-transform z-20 ${
+              selectionMode ? 'bg-[#252525] text-[#E0E0E0]' : 'bg-[#E0E0E0] text-[#121212]'
+            }`}
           >
-            <Plus className="w-6 h-6 stroke-[2.5]" />
+            {selectionMode ? (
+              <span className="text-xs font-semibold">Cancel</span>
+            ) : (
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            )}
           </button>
 
-          {/* Contact Detail View Modal / Sheet */}
           {selectedContact && (
             <ContactDetailModal
               contact={selectedContact}
@@ -151,7 +196,6 @@ export default function App() {
             />
           )}
 
-          {/* Contact Add / Edit Form Modal */}
           {(isAddingContact || editingContact) && (
             <ContactFormModal
               initialContact={editingContact}
@@ -163,7 +207,6 @@ export default function App() {
             />
           )}
 
-          {/* VCF Import / Export Modal */}
           {isImportExportOpen && (
             <VcfImportExportModal
               contacts={contacts}
@@ -175,7 +218,6 @@ export default function App() {
           )}
         </main>
 
-        {/* Desktop Companion Card matching Design HTML */}
         <aside className="hidden lg:block ml-10 xl:ml-14 max-w-sm w-80 shrink-0 space-y-4">
           <div className="p-8 bg-[#1A1A1A] rounded-3xl border border-[#252525] shadow-xl text-[#E0E0E0]">
             <h2 className="text-xl font-light mb-3 text-[#E0E0E0]">Import & Export</h2>
