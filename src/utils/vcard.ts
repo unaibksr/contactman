@@ -1,4 +1,5 @@
 import { Contact, VcfParseResult, PhoneType, EmailType } from '../types';
+import { normalizePhoneNumber } from './storage';
 
 function escapeVCardText(text: string): string {
   if (!text) return '';
@@ -198,8 +199,9 @@ function parseSingleVCardBlock(lines: string[]): Omit<Contact, 'id' | 'createdAt
         break;
       }
       case 'TEL': {
-        const num = unescapeVCardText(valuePart).trim();
-        if (num) {
+        const rawNum = unescapeVCardText(valuePart).trim();
+        if (rawNum) {
+          const num = normalizePhoneNumber(rawNum);
           const upperProps = propPart.toUpperCase();
           let type: PhoneType = 'mobile';
           if (upperProps.includes('WORK')) type = 'work';

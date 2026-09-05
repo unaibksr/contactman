@@ -91,7 +91,12 @@ export function getStoredContacts(): Contact[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.map((c: Contact) => ({
+      ...c,
+      phones: c.phones.map((p) => ({ ...p, number: normalizePhoneNumber(p.number) })),
+    }));
   } catch {
     return [];
   }
@@ -107,6 +112,16 @@ export function saveContacts(contacts: Contact[]): void {
 
 export function generateContactId(): string {
   return `contact-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+export function normalizePhoneNumber(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return trimmed;
+  const digits = trimmed.replace(/[^0-9]/g, '');
+  if (digits.startsWith('0')) {
+    return '+92' + digits.slice(1);
+  }
+  return trimmed;
 }
 
 export function sortContactsAlphabetical(contacts: Contact[]): Contact[] {

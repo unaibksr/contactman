@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Contact, PhoneItem } from '../types';
 import { User, Phone, Check, ArrowLeft, AlertTriangle } from 'lucide-react';
-import { generateContactId } from '../utils/storage';
+import { generateContactId, normalizePhoneNumber } from '../utils/storage';
 
 interface ContactFormModalProps {
   initialContact?: Contact | null;
@@ -21,7 +21,8 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
   const getInitialMobile = () => {
     if (!initialContact?.phones?.length) return '';
     const mobilePhone = initialContact.phones.find((p) => p.type === 'mobile');
-    return mobilePhone ? mobilePhone.number : initialContact.phones[0].number;
+    const raw = mobilePhone ? mobilePhone.number : initialContact.phones[0].number;
+    return normalizePhoneNumber(raw);
   };
 
   const [name, setName] = useState(getInitialName());
@@ -41,18 +42,14 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
     if (e) e.preventDefault();
 
     const trimmedName = name.trim();
-    const trimmedMobile = mobileNumber.trim();
+    const normalizedMobile = normalizePhoneNumber(mobileNumber);
 
     if (!trimmedName) {
       setErrorMsg('Please enter a name for this contact.');
       return;
     }
-    if (!trimmedMobile) {
-      setErrorMsg('Please enter a mobile number.');
-      return;
-    }
-    if (trimmedMobile.length !== 13 || !trimmedMobile.startsWith('+')) {
-      setPhoneError('Mobile number must be exactly 13 characters including + (e.g. +15551234567).');
+    if (!normalizedMobile || normalizedMobile.length !== 13 || !normalizedMobile.startsWith('+')) {
+      setPhoneError('Mobile number must be exactly 13 characters including + (e.g. +15551234567 or 03123456789).');
       return;
     }
 
@@ -63,7 +60,7 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
     const phoneItem: PhoneItem = {
       id: initialContact?.phones?.[0]?.id || `phone-${Date.now()}`,
       type: 'mobile',
-      number: trimmedMobile,
+      number: normalizedMobile,
       isPrimary: true,
     };
 
@@ -85,6 +82,13 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
     };
 
     onSave(contactToSave);
+  };
+
+  const handleMobileBlur = () => {
+    const normalized = normalizePhoneNumber(mobileNumber);
+    if (normalized !== mobileNumber) {
+      setMobileNumber(normalized);
+    }
   };
 
   return (
@@ -147,6 +151,7 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
                   type="tel"
                   value={mobileNumber}
                   onChange={(e) => { setMobileNumber(e.target.value); if (phoneError) setPhoneError(''); }}
+                  onBlur={handleMobileBlur}
                   placeholder="+15551234567"
                   autoComplete="tel"
                   maxLength={13}
