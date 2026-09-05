@@ -32,7 +32,7 @@ export const ContactList: React.FC<ContactListProps> = ({
     const groups: { [letter: string]: Contact[] } = {};
 
     contacts.forEach((contact) => {
-      const name = `${contact.lastName || ''} ${contact.firstName || ''}`.trim() || contact.company || '';
+      const name = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || contact.company || '';
       const firstChar = name.length > 0 ? name[0].toUpperCase() : '#';
       const letter = /^[A-Z]$/.test(firstChar) ? firstChar : '#';
 

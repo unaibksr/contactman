@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Contact } from '../types';
-import { Star, Phone, Mail, CheckSquare } from 'lucide-react';
+import { Star, Phone, Mail, CheckSquare, AlertTriangle } from 'lucide-react';
 
 interface ContactCardProps {
   contact: Contact;
@@ -27,6 +27,8 @@ export const ContactCard: React.FC<ContactCardProps> = ({
   const displayName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || contact.company || 'Unnamed';
   const primaryPhone = contact.phones.find((p) => p.isPrimary) || contact.phones[0];
   const primaryEmail = contact.emails.find((e) => e.isPrimary) || contact.emails[0];
+
+  const phoneIsValid = primaryPhone ? primaryPhone.number.length === 13 && primaryPhone.number.startsWith('+') : true;
 
   const getInitials = (): string => {
     const first = contact.firstName ? contact.firstName[0].toUpperCase() : '';
@@ -115,7 +117,10 @@ export const ContactCard: React.FC<ContactCardProps> = ({
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-xs text-[#666666] truncate">
             {primaryPhone ? (
-              <span className="tabular-nums tracking-normal text-[#888888]">{primaryPhone.number}</span>
+              <span className="tabular-nums tracking-normal text-[#888888] flex items-center gap-1">
+                {primaryPhone.number}
+                {!phoneIsValid && <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />}
+              </span>
             ) : contact.company ? (
               <span className="truncate">{contact.company}</span>
             ) : primaryEmail ? (

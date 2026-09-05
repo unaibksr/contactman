@@ -11,6 +11,7 @@ import {
   Copy,
   Check,
   Building,
+  AlertTriangle,
 } from 'lucide-react';
 import { downloadVcfFile } from '../utils/vcard';
 
@@ -32,6 +33,8 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact,
 
   const primaryPhone = contact.phones.find((p) => p.isPrimary) || contact.phones[0];
   const primaryEmail = contact.emails.find((e) => e.isPrimary) || contact.emails[0];
+
+  const phoneIsValid = (phone: { number: string }) => phone.number.length === 13 && phone.number.startsWith('+');
 
   const getInitials = (): string => {
     const first = contact.firstName ? contact.firstName[0].toUpperCase() : '';
@@ -150,9 +153,12 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({ contact,
                     </a>
                     <span className="text-xs text-[#666666] capitalize ml-2">{phone.type} {phone.isPrimary && '• Default'}</span>
                   </div>
-                  <button type="button" onClick={() => copyToClipboard(phone.number, phone.id)} aria-label="Copy phone number" className="p-1.5 text-[#666666] hover:text-[#E0E0E0] rounded-md hover:bg-[#333333] transition" title="Copy number">
-                    {copiedField === phone.id ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {!phoneIsValid(phone) && <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />}
+                    <button type="button" onClick={() => copyToClipboard(phone.number, phone.id)} aria-label="Copy phone number" className="p-1.5 text-[#666666] hover:text-[#E0E0E0] rounded-md hover:bg-[#333333] transition" title="Copy number">
+                      {copiedField === phone.id ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

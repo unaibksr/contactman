@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Contact, PhoneItem } from '../types';
-import { User, Phone, Check, ArrowLeft } from 'lucide-react';
+import { User, Phone, Check, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { generateContactId } from '../utils/storage';
 
 interface ContactFormModalProps {
@@ -27,6 +27,7 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
   const [name, setName] = useState(getInitialName());
   const [mobileNumber, setMobileNumber] = useState(getInitialMobile());
   const [errorMsg, setErrorMsg] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const getInitials = () => {
     const trimmed = name.trim();
@@ -48,6 +49,10 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
     }
     if (!trimmedMobile) {
       setErrorMsg('Please enter a mobile number.');
+      return;
+    }
+    if (trimmedMobile.length !== 13 || !trimmedMobile.startsWith('+')) {
+      setPhoneError('Mobile number must be exactly 13 characters including + (e.g. +15551234567).');
       return;
     }
 
@@ -106,9 +111,10 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
             <p className="text-[11px] text-[#666666]">{name.trim() ? name.trim() : 'New Contact'}</p>
           </div>
 
-          {errorMsg && (
-            <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs text-center">
-              {errorMsg}
+          {(errorMsg || phoneError) && (
+            <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs text-center flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <span>{errorMsg || phoneError}</span>
             </div>
           )}
 
@@ -135,15 +141,22 @@ export const ContactFormModal: React.FC<ContactFormModalProps> = ({ initialConta
                 <Phone className="w-3 h-3 text-[#666666]" />
                 <span>Mobile Number</span>
               </label>
-              <input
-                id="contact-mobile-input"
-                type="tel"
-                value={mobileNumber}
-                onChange={(e) => { setMobileNumber(e.target.value); if (errorMsg) setErrorMsg(''); }}
-                placeholder="+1 (555) 000-0000"
-                autoComplete="tel"
-                className="w-full bg-transparent text-sm font-mono text-[#E0E0E0] placeholder-[#666666] focus:outline-none"
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  id="contact-mobile-input"
+                  type="tel"
+                  value={mobileNumber}
+                  onChange={(e) => { setMobileNumber(e.target.value); if (phoneError) setPhoneError(''); }}
+                  placeholder="+15551234567"
+                  autoComplete="tel"
+                  maxLength={13}
+                  className={`w-full bg-transparent text-sm font-mono text-[#E0E0E0] placeholder-[#666666] focus:outline-none ${phoneError ? 'text-amber-400' : ''}`}
+                />
+                {mobileNumber.length > 0 && mobileNumber.length !== 13 && (
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                )}
+              </div>
+              <p className="text-[10px] text-[#666666] mt-1">Exactly 13 characters including +</p>
             </div>
           </div>
         </div>

@@ -111,8 +111,8 @@ export function generateContactId(): string {
 
 export function sortContactsAlphabetical(contacts: Contact[]): Contact[] {
   return [...contacts].sort((a, b) => {
-    const nameA = `${a.lastName || ''} ${a.firstName || ''}`.trim().toLowerCase() || a.company?.toLowerCase() || '';
-    const nameB = `${b.lastName || ''} ${b.firstName || ''}`.trim().toLowerCase() || b.company?.toLowerCase() || '';
+    const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim().toLowerCase() || a.company?.toLowerCase() || '';
+    const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim().toLowerCase() || b.company?.toLowerCase() || '';
     return nameA.localeCompare(nameB);
   });
 }
