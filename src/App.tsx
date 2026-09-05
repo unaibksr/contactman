@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Contact } from './types';
 import {
   getStoredContacts,
@@ -11,8 +11,10 @@ import { ContactList } from './components/ContactList';
 import { ContactDetailModal } from './components/ContactDetailModal';
 import { ContactFormModal } from './components/ContactFormModal';
 import { VcfImportExportModal } from './components/VcfImportExportModal';
-import { Plus, CheckCircle2, ShieldCheck, Download, Upload } from 'lucide-react';
+import { Plus, CheckCircle2, ShieldCheck, Download, Upload, Undo2 } from 'lucide-react';
 import { PWAInstallButton } from './components/PWAInstallButton';
+
+const UNDO_TIMEOUT = 4000;
 
 export default function App() {
   const [contacts, setContacts] = useState<Contact[]>(() => {
@@ -26,9 +28,52 @@ export default function App() {
   const [isAddingContact, setIsAddingContact] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
 
+  const [deletedContact, setDeletedContact] = useState<Contact | null>(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+
   useEffect(() => {
     saveContacts(contacts);
   }, [contacts]);
+
+  const showUndo = useCallback((contact: Contact) => {
+    setDeletedContact(contact);
+    setSnackbarVisible(true);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    setContacts((prev) => {
+      if (!deletedContact) return prev;
+      const exists = prev.some((c) => c.id === deletedContact.id);
+      if (exists) return prev;
+      return sortContactsAlphabetical([deletedContact, ...prev]);
+    });
+    setDeletedContact(null);
+    setSnackbarVisible(false);
+  }, [deletedContact]);
+
+  const dismissSnackbar = useCallback(() => {
+    setSnackbarVisible(false);
+    setDeletedContact(null);
+  }, []);
+
+  const handleDeleteContact = useCallback((id: string) => {
+    setContacts((prev) => {
+      const contact = prev.find((c) => c.id === id);
+      if (contact) {
+        showUndo(contact);
+      }
+      return prev.filter((c) => c.id !== id);
+    });
+    if (selectedContact && selectedContact.id === id) {
+      setSelectedContact(null);
+    }
+  }, [selectedContact, showUndo]);
+
+  useEffect(() => {
+    if (!snackbarVisible) return;
+    const timer = setTimeout(dismissSnackbar, UNDO_TIMEOUT);
+    return () => clearTimeout(timer);
+  }, [snackbarVisible, dismissSnackbar]);
 
   const duplicateContactIds = useMemo(() => {
     const phoneMap = new Map<string, string[]>();
@@ -123,13 +168,6 @@ export default function App() {
     setEditingContact(null);
   };
 
-  const handleDeleteContact = (id: string) => {
-    setContacts((prev) => prev.filter((c) => c.id !== id));
-    if (selectedContact && selectedContact.id === id) {
-      setSelectedContact(null);
-    }
-  };
-
   const handleRestoreDefaults = () => {
     setContacts(INITIAL_CONTACTS);
   };
@@ -159,6 +197,7 @@ export default function App() {
             onSelectContact={(c) => setSelectedContact(c)}
             onToggleFavorite={handleToggleFavorite}
             onDeleteContact={handleDeleteContact}
+            onUndoDelete={handleUndo}
             searchQuery={searchQuery}
             onOpenAddModal={() => setIsAddingContact(true)}
             onOpenImportExport={handleOpenImportExport}
@@ -206,6 +245,23 @@ export default function App() {
               onClose={() => setIsImportExportOpen(false)}
               onRestoreDefaults={handleRestoreDefaults}
             />
+          )}
+
+          {snackbarVisible && deletedContact && (
+            <div className="absolute bottom-24 left-4 right-4 z-50 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-[#252525] border border-[#333333] shadow-2xl">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs text-[#888888] shrink-0">Deleted</span>
+                <span className="text-xs font-medium text-[#E0E0E0] truncate">{deletedContact.firstName} {deletedContact.lastName}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleUndo}
+                className="flex items-center gap-1 shrink-0 px-2.5 py-1.5 rounded-lg bg-[#E0E0E0] text-[#121212] text-xs font-semibold hover:bg-white transition"
+              >
+                <Undo2 className="w-3.5 h-3.5" />
+                <span>Undo</span>
+              </button>
+            </div>
           )}
         </main>
 
